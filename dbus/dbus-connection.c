@@ -99,7 +99,7 @@
  * The other application may be a message bus; for convenience, the
  * function dbus_bus_get() is provided to automatically open a
  * connection to the well-known message buses.
- * 
+ *
  * In brief a DBusConnection is a message queue associated with some
  * message transport mechanism such as a socket.  The connection
  * maintains a queue of incoming messages and a queue of outgoing
@@ -302,9 +302,24 @@ struct DBusConnection
    */
   dbus_bool_t dispatch_acquired; /**< Someone has dispatch path (can drain incoming queue) */
   dbus_bool_t io_path_acquired;  /**< Someone has transport io path (can use the transport to read/write messages) */
-  
-  unsigned int shareable : 1; /**< #TRUE if libdbus owns a reference to the connection and can return it from dbus_connection_open() more than once */
-  
+
+#ifdef BLUETI_ENHANCEMENT
+  unsigned int shareable; /**< #TRUE if libdbus owns a reference to the connection and can return it from dbus_connection_open() more than once */
+
+  unsigned int exit_on_disconnect; /**< If #TRUE, exit after handling disconnect signal */
+
+  unsigned int route_peer_messages; /**< If #TRUE, if org.freedesktop.DBus.Peer messages have a bus name, don't handle them automatically */
+
+  unsigned int disconnected_message_arrived;   /**< We popped or are dispatching the disconnected message.
+                                                    * if the disconnect_message_link is NULL then we queued it, but
+                                                    * this flag is whether it got to the head of the queue.
+                                                    */
+  unsigned int disconnected_message_processed; /**< We did our default handling of the disconnected message,
+                                                    * such as closing the connection.
+                                                    */
+#else /*BLUETI_ENHANCEMENT*/
+unsigned int shareable : 1; /**< #TRUE if libdbus owns a reference to the connection and can return it from dbus_connection_open() more than once */
+
   unsigned int exit_on_disconnect : 1; /**< If #TRUE, exit after handling disconnect signal */
 
   unsigned int route_peer_messages : 1; /**< If #TRUE, if org.freedesktop.DBus.Peer messages have a bus name, don't handle them automatically */
@@ -316,6 +331,7 @@ struct DBusConnection
   unsigned int disconnected_message_processed : 1; /**< We did our default handling of the disconnected message,
                                                     * such as closing the connection.
                                                     */
+#endif /*BLUETI_ENHANCEMENT*/
   
 #ifndef DBUS_DISABLE_CHECKS
   unsigned int have_connection_lock : 1; /**< Used to check locking */
